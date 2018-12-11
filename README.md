@@ -6,7 +6,7 @@ The game is made using the Three.js library and other javascript files described
 
 
 
-##GAME DEMO
+## GAME DEMO
 [click here to play the game](https://coldfrenzy.github.io/)
 
 
