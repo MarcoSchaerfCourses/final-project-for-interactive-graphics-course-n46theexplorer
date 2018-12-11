@@ -4,12 +4,28 @@ to reach the second room and destroy a cube without being seen by the guard.
 The game is made using the Three.js library and other javascript files described inside the Report.pdf
 
 
+
+
+
+
+
 ## Report
 [click here to view the report](https://github.com/MarcoSchaerfCourses/final-project-for-interactive-graphics-course-n46theexplorer/blob/master/Report.pdf)
+
+
+
+
 
 ## Library
 [Three.js](https://threejs.org/)
 
+
+
+
+
+
 ## Credits
+
 Author: Francesco Frattolillo
+
 Professor: Marco Schaerf
