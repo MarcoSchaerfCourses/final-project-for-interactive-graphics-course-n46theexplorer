@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>   
+	<title>login page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="styleCSS/style1.css">
+	<style>
+		.modal {
+			display: none; /* Hidden by default */
+			position: fixed; /* Stay in place */
+			z-index: 1; /* Sit on top */
+			padding-top: 100px; /* Location of the box */
+			left: 0;
+			top: 0;
+			width: 100%; /* Full width */
+			height: 100%; /* Full height */
+			overflow: auto; /* Enable scroll if needed */
+			background-color: rgb(0,0,0); /* Fallback color */
+			background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+		}
+
+		/* Modal Content */
+		.modal-content {
+			position: relative;
+			background-color: #fefefe;
+			margin: auto;
+			padding: 0;
+			border: 1px solid #888;
+			width: 80%;
+			box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+			-webkit-animation-name: animatetop;
+			-webkit-animation-duration: 0.4s;
+			animation-name: animatetop;
+			animation-duration: 0.4s
+		}
+
+		/* Add Animation */
+		@-webkit-keyframes animatetop {
+			from {top:-300px; opacity:0} 
+			to {top:0; opacity:1}
+		}
+
+		@keyframes animatetop {
+			from {top:-300px; opacity:0}
+			to {top:0; opacity:1}
+		}
+
+		/* The Close Button */
+		.close {
+			color: white;
+			float: right;
+			font-size: 28px;
+			font-weight: bold;
+		}
+
+		.close:hover,
+		.close:focus {
+			color: #000;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		.modal-header {
+			padding: 2px 16px;
+			background-color: #708090;
+			color: white;
+		}
+
+		.modal-body {padding: 2px 16px;}
+
+		.modal-footer {
+			padding: 2px 16px;
+			background-color: #708090;
+			color: white;
+		}
+	</style>
+
+</head>
+<body background="images/Robot4.jpg">
+
+	<div class="container">
+		<button class="button" id="start" onclick="startGame()">Start Game</a>
+		<button class="button" onclick="openInfo()">Info !</a>  
+		<button class="button" onclick="openCreator()">Creator</a>
+	</div>
+	
+	<div id="myModal" class="modal">
+
+	  <!-- Modal content -->
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <span class="close">×</span>
+		  <h2>INFO !</h2>
+		</div>
+		<div class="modal-body">
+		  <p>N46 The Explorer is a simple game made in Threejs.</p>
+		  <p>The aim of the game is to reach the second room where there is a cube and destroy it.</p>
+		  <p>You must also pay attention to the robot guard, if it sees you it's game over.</p>
+		  <p>Other info about the keyboard buttons to use are shown inside the game's main page by pressing the info button in the upper left corner</p>
+		</div>
+		<div class="modal-footer">
+		  <h3>Sapienza University</h3>
+		</div>
+	  </div>
+
+	</div>
+	<div id="myModal2" class="modal">
+		  <div class="modal-content">
+		<div class="modal-header">
+		  <span class="close">×</span>
+		  <h2>CREATOR</h2>
+		</div>
+		<div class="modal-body">
+		  <p>My name is Francesco Frattolillo</p>
+		  <p>I am currently a student of the master degree in artificial intelligence and robotics</p>
+		  <p>Contact info: francescofrattolillo95@gmail.com</p>
+
+		</div>
+		<div class="modal-footer">
+		  <h3>Sapienza University</h3>
+		</div>
+	  </div>
+
+	</div>
+
+	<script>
+		var span = document.getElementsByClassName("close")[0];
+		var span1 = document.getElementsByClassName("close")[1];
+		var modal = document.getElementById('myModal');
+		var modal2 = document.getElementById('myModal2');
+		function startGame(){
+			window.open("game/N46TheExplorer.html","_self");
+		}
+		function openInfo(){
+		    modal.style.display = "block";
+		
+		}
+		span.onclick = function() {
+			modal.style.display = "none";
+		}
+		span1.onclick = function(){
+			modal2.style.display = "none";
+		}
+		function openCreator(){
+			modal2.style.display = "block";
+		}
+
+
+
+	</script>
+</body>
+
+
+</html>

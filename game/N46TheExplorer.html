@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>first game </title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body { margin: 0;}
+		canvas { width: 100%; height: 100% }
+		#game-over,
+        #game-over-overlay {
+            margin: auto;
+            width: 900px;
+            height: 600px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            display: none;
+            font-size: 40px;
+        }
+
+        #game-over-overlay {
+            background-color: black;
+            opacity: 1.0;
+            font-size: 40px;
+        }
+
+        #game-over {
+            height: 200px;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        #game-over h1 {
+            font-size: 3em;
+            font-family: sans-serif;
+            font-size: 40px;
+        	color: DarkRed;
+		}
+
+        #game-over button {
+            font-size: 1.5em;
+        }
+		#win,
+        #win-overlay {
+            margin: auto;
+            width: 900px;
+            height: 600px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            display: none;
+            font-size: 40px;
+        }
+
+        #win-overlay {
+            background-color: white;
+            opacity: 1.0;
+            font-size: 40px;
+        }
+
+        #win {
+            height: 200px;
+            text-align: center;
+            color: green;
+            font-size: 20px;
+        }
+
+        #win h1 {
+            font-size: 3em;
+            font-family: sans-serif;
+            font-size: 40px;
+        	color: green;
+		}
+
+        #win button {
+            font-size: 1.5em;
+        }
+	</style>
+	<link rel = "stylesheet" href ="../styleCSS/loadingStyle.css">
+
+	<!--<div id="message"></div>-->
+</head>
+<body>
+
+
+	<div id="loadingbar" class="container">
+	  <div class="gearbox">
+	  <div class="overlay"></div>
+		<div class="gear one">
+		  <div class="gear-inner">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+		  </div>
+		</div>
+		<div class="gear two">
+		  <div class="gear-inner">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+		  </div>
+		</div>
+		<div class="gear three">
+		  <div class="gear-inner">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+		  </div>
+		</div>
+		<div class="gear four large">
+		  <div class="gear-inner">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+		  </div>
+		</div>
+	  </div>
+	  <h1>Loading...</h1>
+	</div>
+    <div id="game-over-overlay"></div>	
+	<div id="game-over">
+    <h1>GAME OVER</h1>
+    <button id="play-again">Play Again</button>
+    </div>
+	</div>
+    <div id="win-overlay"></div>	
+	<div id="win">
+    <h1>YOU WIN!!!</h1>
+    <button id="play-again1">Play Again</button>
+    </div>
+	<script type="text/javascript" src="../js/three.js"></script>
+	<script type="text/javascript" src="../js/three.min.js"></script>
+	<script type="text/javascript" src="../js/Common/webgl-utils.js"></script>
+	<script type="text/javascript" src="../js/TrackballControls.js"></script>
+	<script type="text/javascript" src="../js/threex.KeyboardState.js"></script>
+	<script type="text/javascript" src="../js/GLTFLoader.js"></script>
+	<script type="text/javascript" src="../js/inflate.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../js/tween.js"></script>
+	<script type="text/javascript" src="../js/dat.gui.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="../js/jquery-ui.js"></script>
+	<script type="text/javascript" src="../js/SubdivisionModifier.js"></script>
+	<script type="x-shader/x-vertex" id="vertexshader">
+		attribute float distance;
+		attribute vec3 surfaceNormal;
+		uniform float amplitude;
+		varying vec3 vNormal;
+		void main() {
+			vNormal = normal;
+			vec3 newPosition = position + surfaceNormal * vec3(distance * amplitude);
+			gl_Position = projectionMatrix *
+						modelViewMatrix *
+						vec4(newPosition,1.0);
+		}
+	</script>
+	<script type="x-shader/x-fragment" id="fragmentshader">
+		varying vec3 vNormal;
+		void main() {
+			vec3 light = vec3(0.7, 0.5, 1.0);
+			light = normalize(light);
+			float dProd = max(0.0, dot(vNormal, light));
+			gl_FragColor = vec4(dProd, // R
+								dProd, // G
+								dProd, // B
+								1.0);  // A
+		} 
+	</script>
+	<link rel="stylesheet" href="../styleCSS/jquery-ui.css" />
+	<link rel="stylesheet" href="../styleCSS/info.css"/>
+	<script type="text/javascript" src="../js/info.js"></script>
+	<div id="infoButton"></div>
+	<div id="infoBox" title="Demo Information">
+	Use the mouse to change the value inside the Control Box <br/>
+	Movement controls: <br/>
+	<ul>
+	<li>W/S: Translate Forward/Backward
+	<li>A/D: Rotate Left/Right
+	<li>J: to Attack 
+	<li>K: to Jump 
+	<li>K+A: to Jump ahead
+	<li>R: to reset position and rotation
+	</ul>
+
+	</div>
+	<script>
+		var scene, camera, renderer, light;  //renderer is the equivalent of the canvas
+		var mixer;
+		var guard;
+		var robotPos = new THREE.Vector3( 0, 0, 0 );
+		var keyboard = new THREEx.KeyboardState();
+		var collidableMeshList = [];
+		var clock = new THREE.Clock();
+		var startGuard = false;
+		var guardmoveforward = true;
+		var opendoor = true;
+		var LOADING_COMPLETE = false;
+		var pointlightcolor1 = 0xff6600
+		var pointlightcolor2 = 0x0066ff
+		var pointlightcolor3 = 0xffffff
+
+		var loadingScreen = {
+            scene: new THREE.Scene(),
+            camera: new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 1000) //,
+        };
+		
+		var loadingManager = null;
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////LOADING//////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		loadingManager = new THREE.LoadingManager();
+
+		loadingManager.onProgress = function(item, loaded, total) {
+			console.log(item, loaded, total);
+		};
+
+		loadingManager.onLoad = function() {
+			LOADING_COMPLETE = true;
+		};
+		
+		
+		
+		document.getElementById('play-again').addEventListener('click', function() {
+            reset();
+        });
+		document.getElementById('play-again1').addEventListener('click', function() {
+            reset1();
+        });
+	
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////RENDERER////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		//renderer.setClearColor( 0xffffff, 1 );
+		renderer.shadowMap.enabled = true;
+		//renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		//domElement is a canvas where the renderer draws its output.
+		//This is automatically created by the renderer in the constructor (if not provided already); you just need to add it to your page like so:
+		document.body.appendChild( renderer.domElement );
+		//GLTFLoader will automatically configure textures referenced from a .gltf or .glb file correctly if we the following lines of code
+		renderer.gammaOutput = true;
+		renderer.gammaFactor = 2.2;
+		
+		
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////SCENE////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+		
+		scene = new THREE.Scene();
+		
+		
+		
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////LIGHT////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		light = new THREE.DirectionalLight( pointlightcolor1 , 5.0);
+				light.position.set( 100, 100, 100 );
+				light.castShadow = true;
+				//light.target = object to point;
+				//Set up shadow properties for the light
+				light.shadow.mapSize.width = 1024;  // default
+				light.shadow.mapSize.height = 1024; // default
+				/*light.shadow.camera.near = 0.5;    // default
+				light.shadow.camera.far = 500;     // default*/
+				light.shadow.camera.top = 500;
+				light.shadow.camera.bottom = -500;
+				light.shadow.camera.left = -500;
+				light.shadow.camera.right = 500;
+				scene.add( light ); 
+				//var helper = new THREE.DirectionalLightHelper( light, 10 );
+				//scene.add( helper );
+		//sky color ground color intensity 
+		hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0); 
+		scene.add(hemiLight);
+		//ambient
+		var ambientlight = new THREE.AmbientLight( 0xffffff, 1.0 ); // strong white light
+		scene.add( ambientlight );
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////CAMERA//////////////////////////////////////////////////////////// 
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		camera1 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000 );
+		camera1.lookAt(scene.position);
+		camera2 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000 );
+		camera2.lookAt(scene.position);
+		camera3 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000 );
+		camera3.position.set(0, 30 , 100);
+		//camera3.lookAt(scene.position);
+		//CAMERA CONTROL		
+		controls = new THREE.TrackballControls( camera3, renderer.domElement );
+		scene.add(camera1);
+		scene.add(camera2);
+		scene.add(camera3);
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////TEXTURES///////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		var floortexture = new THREE.TextureLoader(loadingManager).load( "./../Textures/floorTexture1.jpg" );
+		floortexture.wrapS = THREE.RepeatWrapping;
+		floortexture.wrapT = THREE.RepeatWrapping;
+		floortexture.repeat.set( 130, 260 );
+		var walltexture1 = new THREE.TextureLoader(loadingManager).load( "./../Textures/wallTexture1.jpg" );
+		walltexture1.wrapS = THREE.RepeatWrapping;
+		walltexture1.wrapT = THREE.RepeatWrapping;
+		walltexture1.repeat.set( 5, 5 );
+		var slidingdoortexture = new THREE.TextureLoader(loadingManager).load( "./../Textures/slidingDoorTexture.jpg" );
+		var slidingdoortexture2 = new THREE.TextureLoader(loadingManager).load( "./../Textures/slidingDoorTexture2.jpg" );
+
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////OBJECTS////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
+		
+		
+		// Create an event listener that resizes the renderer with the browser window.
+		window.addEventListener('resize', function() {
+			var WIDTH = window.innerWidth,
+				HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera1.aspect = WIDTH / HEIGHT;
+			camera1.updateProjectionMatrix();
+			camera2.aspect = WIDTH / HEIGHT;
+			camera2.updateProjectionMatrix();
+			camera3.aspect = WIDTH / HEIGHT;
+			camera3.updateProjectionMatrix();
+		})		
+		
+		// Instantiate a loader
+		var loader = new THREE.GLTFLoader(loadingManager);
+
+		// Optional: Provide a DRACOLoader instance to decode compressed mesh data
+		//THREE.DRACOLoader.setDecoderPath( '/examples/js/libs/draco' );
+		//loader.setDRACOLoader( new THREE.DRACOLoader() );
+
+		// Load a glTF resource
+		loader.load(
+			// resource URL
+			'./../3DObjects/RobotWalkCycle/scene.gltf',
+			// called when the resource is loaded
+			function ( gltf ) {
+				guard = gltf.scene;
+				guard.scale.set(7,7,7);
+				guard.position.set(0,0,-200);
+				guard.rotation.y = Math.PI ;
+				//guard.castShadow = true;
+				//every child should cast shadow to actually work
+				guard.traverse( function( node ) { if ( node instanceof THREE.Mesh ) { node.castShadow = true; } } );
+				scene.add( gltf.scene );
+				var model = gltf.scene;
+				//gltf.animations; // Array<THREE.AnimationClip>
+				gltf.scene; // THREE.Scene
+				gltf.scenes; // Array<THREE.Scene>
+				gltf.cameras; // Array<THREE.Camera>
+				gltf.asset; // Object
+				
+				mixer = new THREE.AnimationMixer(model);
+                mixer.clipAction(gltf.animations[0]).play();
+				startGuard = true;
+				
+			},
+			// called while loading is progressing
+			function ( xhr ) {
+
+				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+			},
+			// called when loading has errors
+			function ( error ) {
+
+				console.log( 'An error happened' );
+
+			}
+		);
+		
+		//create a bounding box around the guard
+		var guardBB = new THREE.Mesh(
+			new THREE.CubeGeometry(20,50,50,6,6,6),
+			new THREE.MeshBasicMaterial({
+				color: 0x0000ff,
+				wireframe: true,
+				visible: false,
+			})
+		);
+		guardBB.position.set(0,25,-200);
+		scene.add(guardBB);
+		var guardSense = new THREE.Mesh(
+			new THREE.CubeGeometry(80, 30, 50, 3,3,3),
+			new THREE.MeshBasicMaterial({
+				color: 0x00ff00,
+				wireframe: true,
+				visible: false,
+			})
+		);
+		guardSense.position.set(0 , 45 , -200);
+		scene.add(guardSense);
+		//GUARD MOVEMENT
+		function guardMove(guard,startGuard){	
+			if(startGuard){
+				pos = guard.position;
+				if(pos.x <= 150 && guardmoveforward == true){
+					guard.rotation.set(0,Math.PI/2,0);
+					guard.translateZ(guardspeed);
+				}else if(pos.x >= -150){
+					guardmoveforward = false;
+					guard.rotation.set(0,-Math.PI/2,0);
+					guard.translateZ(guardspeed);
+				}else{
+					guardmoveforward = true;
+				}
+			}
+		}
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////BUILDING///////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////			
+		
+		//FLOOR
+		
+		var wallHeigh = 100;
+		var wallWidth = 300;
+		var wallDepth = 10;
+		var planeGeometry = new THREE.PlaneBufferGeometry( 10000, 10000);
+		var floorMaterial = new THREE.MeshStandardMaterial( { 
+			color: 0x888888, 
+			side: THREE.DoubleSide, 
+			map: floortexture,
+			roughness: 0.4,
+			metalness: 1.0,
+			})
+		var plane = new THREE.Mesh( planeGeometry, floorMaterial );
+		plane.receiveShadow = true;
+		plane.rotation.x = Math.PI / 2;
+		scene.add(plane);
+
+		
+		
+		//WALLS
+		var wallGeometry = new THREE.BoxBufferGeometry( wallWidth, wallHeigh, wallDepth,6,6,6 );
+		var wallMaterial1 = new THREE.MeshStandardMaterial( { 
+			color: 0xdddddd, 
+			//side: THREE.DoubleSide, 
+			map: walltexture1,
+			roughness: 0.4,
+			metalness: 1.0,
+			})
+		var doorMaterial = new THREE.MeshStandardMaterial( { 
+			color: 0xdddddd, 
+			//side: THREE.DoubleSide, 
+			map: slidingdoortexture,
+			roughness: 0.4,
+			metalness: 1.0,
+			})
+		var doorMaterial2 = new THREE.MeshStandardMaterial( { 
+			color: 0xdddddd, 
+			//side: THREE.DoubleSide, 
+			map: slidingdoortexture2,
+			roughness: 0.4,
+			metalness: 1.0,
+			})			
+		var wall1 = new THREE.Mesh( wallGeometry, wallMaterial1 );
+		wall1.receiveShadow = false;
+		//wall.castShadow = true;
+		wall1.position.set(75, wallHeigh/2 , 0)
+		wall1.rotation.y = Math.PI / 2;
+		scene.add(wall1);
+		var wall2 = new THREE.Mesh( wallGeometry, wallMaterial1 );
+		wall2.position.set(-75, wallHeigh/2 , 0)
+		wall2.rotation.y = Math.PI / 2;
+		scene.add(wall2);
+		var wall3 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/2 + wallDepth,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall3.position.set( 0 , wallHeigh/2 , wallWidth/2 + wallDepth/2)
+		scene.add(wall3);
+		var wall4 = new THREE.Mesh(new THREE.BoxBufferGeometry(wallWidth/2,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall4.position.set(75+wallWidth/4 - wallDepth/2, wallHeigh/2,-wallWidth/2-wallDepth/2);   
+		scene.add(wall4);
+		var wall5 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/2,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall5.position.set(-75-wallWidth/4 + wallDepth/2, wallHeigh/2,-wallWidth/2-wallDepth/2);   
+		scene.add(wall5);	
+		var wall6 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/4,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall6.rotation.y = Math.PI / 2;
+		wall6.position.set(+75+wallWidth/2 - wallDepth/2, wallHeigh/2,-wallWidth/2-wallWidth/8);   
+		scene.add(wall6);	
+		var wall7 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/4,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall7.rotation.y = Math.PI / 2;
+		wall7.position.set(-75-wallWidth/2 + wallDepth/2, wallHeigh/2,-wallWidth/2-wallWidth/8);   
+		scene.add(wall7);			
+		var wall8 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/2,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall8.position.set(-75-wallWidth/4 , wallHeigh/2,-wallWidth/2-wallDepth/2-wallWidth/4);   
+		scene.add(wall8);			
+		var wall9 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/2,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall9.position.set(+75+wallWidth/4 , wallHeigh/2,-wallWidth/2-wallDepth/2-wallWidth/4);   
+		scene.add(wall9);			
+		var wall10 = new THREE.Mesh( wallGeometry, wallMaterial1 );
+		wall10.position.set(75, wallHeigh/2 , -wallWidth-wallWidth/4)
+		wall10.rotation.y = Math.PI / 2;
+		scene.add(wall10);
+		var wall12 = new THREE.Mesh( wallGeometry, wallMaterial1 );
+		wall12.position.set(-75, wallHeigh/2 , -wallWidth-wallWidth/4)
+		wall12.rotation.y = Math.PI / 2;
+		scene.add(wall12);		
+		var leftslidingDoor = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/4 + wallDepth,wallHeigh,wallDepth,6,6,6), doorMaterial );
+		leftslidingDoor.position.set( wallWidth/8+5 , wallHeigh/2 , -wallWidth-wallWidth/4-wallWidth/2)		
+		scene.add(leftslidingDoor);
+		var rightslidingDoor = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth/4 + wallDepth,wallHeigh,wallDepth,6,6,6), doorMaterial2 );
+		rightslidingDoor.position.set( -wallWidth/8-5 , wallHeigh/2 , -wallWidth-wallWidth/4-wallWidth/2)		
+		scene.add(rightslidingDoor);
+		var wall13 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall13.position.set(-75-wallWidth/2 , wallHeigh/2,-wallWidth/2-wallDepth/2-wallWidth/4- wallWidth+ wallDepth/2);   
+		scene.add(wall13);		
+		var wall14 = new THREE.Mesh( new THREE.BoxBufferGeometry(wallWidth,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall14.position.set(+75+wallWidth/2 , wallHeigh/2,-wallWidth/2-wallDepth/2-wallWidth/4- wallWidth+ wallDepth/2);   
+		scene.add(wall14);		
+		var wall15 = new THREE.Mesh( new THREE.BoxBufferGeometry(2*wallWidth,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall15.position.set(-75-wallWidth -wallDepth/2 , wallHeigh/2,-2*wallWidth-wallDepth/2-wallWidth/4 -wallWidth/2 + wallDepth);   
+		wall15.rotation.y = Math.PI/2;
+		scene.add(wall15);		
+		var wall16 = new THREE.Mesh( new THREE.BoxBufferGeometry(2*wallWidth,wallHeigh,wallDepth,6,6,6), wallMaterial1 );
+		wall16.position.set(75+wallWidth +wallDepth/2 , wallHeigh/2,-2*wallWidth-wallDepth/2-wallWidth/4 -wallWidth/2 + wallDepth);   
+		wall16.rotation.y = Math.PI/2;
+		scene.add(wall16);		
+		var wall17 = new THREE.Mesh( new THREE.BoxBufferGeometry(2*wallWidth + wallWidth/2 + wallDepth,wallHeigh,wallDepth,6,6,6), wallMaterial1);
+		wall17.position.set( 0 , wallHeigh/2 ,-3*wallWidth-wallDepth/2-wallWidth/4 -wallWidth/2 + wallDepth)
+		scene.add(wall17);
+		//we differentiate the walls based on their z position and based on their rotation (helpfull during collision
+		// function)
+		var collidableVerticalWalls1 = [];
+		var collidableVerticalWalls2 = [];
+		var collidableVerticalWalls3 = [];
+		var collidableVerticalWalls4 = [];
+		var collidableVerticalWalls5 = []; 
+		var collidableHorizontalWalls1 = [];
+		var collidableHorizontalWalls2 = [];
+		var collidableHorizontalWalls3 = [];
+		var collidableHorizontalWalls5 = [];
+		var collidableGuard = [];
+		var collidableCube = [];
+		
+		collidableVerticalWalls1.push(wall1);
+		collidableVerticalWalls1.push(wall2);
+		collidableVerticalWalls2.push(wall7);
+		collidableVerticalWalls3.push(wall6);
+		collidableVerticalWalls4.push(wall10);
+		collidableVerticalWalls4.push(wall12);		
+		collidableVerticalWalls5.push(wall15);
+		collidableVerticalWalls5.push(wall16);
+		collidableHorizontalWalls1.push(wall3);
+		collidableHorizontalWalls2.push(wall5);
+		collidableHorizontalWalls2.push(wall8);
+		collidableHorizontalWalls3.push(wall4);
+		collidableHorizontalWalls3.push(wall9);
+		collidableHorizontalWalls5.push(wall13);
+		collidableHorizontalWalls5.push(wall14);
+		collidableHorizontalWalls5.push(wall17);
+		collidableGuard.push(guardBB);
+
+		
+		
+		//point Lights, we will put them on the top of every wall  			
+		var pointlights = []
+		var pointlight1 = new THREE.PointLight( pointlightcolor1, 0.1);
+		//pointlight1.castShadow = true;
+		var pointlight2 = new THREE.PointLight( pointlightcolor1, 0.1);
+		//pointlight2.castShadow = true;
+		var pointlight3 = new THREE.PointLight( pointlightcolor1, 0.1);
+		//pointlight3.castShadow = true;
+		var pointlight4 = new THREE.PointLight( pointlightcolor1, 0.1);
+		//pointlight4.castShadow = true;
+		var pointlight5 = new THREE.PointLight(pointlightcolor1 , 0.1);
+		pointlight1.position.set(wall1.position.x-wallWidth/2,wall1.position.y,wall1.position.z);
+		pointlights.push(pointlight1);
+		pointlight2.position.set(wall2.position.x+wallWidth/2,wall2.position.y,wall2.position.z);		
+		pointlights.push(pointlight2);
+		pointlight3.position.set(wall10.position.x-wallWidth/2,wall10.position.y,wall10.position.z);
+		pointlights.push(pointlight3);
+		pointlight4.position.set(wall12.position.x+wallWidth/2,wall12.position.y,wall12.position.z);
+		pointlights.push(pointlight4);
+		pointlight5.position.set(wall17.position.x,wall17.position.y,wall17.position.z);
+		pointlights.push(pointlight5);
+				
+	
+
+
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		var camerabehind = true;
+		var cameratop = false;
+		var camerafree = false;
+		
+		function openDoorfun(position,slidingDoor){
+			var distance1 = Math.abs(position.z-slidingDoor.position.z)
+			if( distance1 <= 50 ) {
+				opendoor = true;
+			}else{
+				opendoor = false;
+			}
+		}
+		var guardDirection = new THREE.Vector3(0,0,0);
+		var positivey = new THREE.Vector3(1, 0, 0);
+		function moveGuardBB(){
+			guard.getWorldDirection(guardDirection);
+			guard.getWorldPosition (guardBB.position) ;
+			guardBB.position.y = 25;
+			guard.getWorldPosition (guardSense.position);
+			guardSense.position.y = 25
+			//check the direction of the guard and decide where to move the sensing cube along x axis
+			if(guardDirection.angleTo(positivey) == 0.0){
+				guardSense.position.x += 40;
+			}else{
+				guardSense.position.x -= 40;
+			}			
+			
+		}
+		function changelight(){
+			if (DirLight){
+				for(var i = 0; i < pointlights.length; i++){
+					scene.add(pointlights[i]);
+				}
+				scene.remove(light);
+				DirLight = false;
+			}else{
+				scene.add(light);
+				for(var i = 0; i < pointlights.length; i++){
+					scene.remove(pointlights[i]);
+				}
+				DirLight = true;
+			}
+		}
+
+		function changetextures(){
+			if(robotTextures){
+				robotTextures = false;
+			}else{
+				robotTextures = true;
+			}
+		
+		}
+		
+		function changecolor(lcol){
+			var j = colordict[lcol]
+			if(j == 1){
+				light.color.set( pointlightcolor1)
+				for(var i = 0;i < pointlights.length;i++){
+					pointlights[i].color.set( pointlightcolor1);
+				}
+			}
+			if(j == 2){
+				light.color.set(pointlightcolor3)
+				for(var i = 0;i < pointlights.length;i++){
+					pointlights[i].color.set(pointlightcolor3);
+				}			
+			}
+			if(j == 3){
+				light.color.set(pointlightcolor2)
+				for(var i = 0;i < pointlights.length;i++){
+					pointlights[i].color.set(pointlightcolor2);
+				}
+			}
+		}
+		function changecamera(cam){
+			var j = cameradic[cam]
+			if(j == 1){	
+				camerabehind = true;
+				cameratop = false;
+				camerafree = false;
+			}
+			if(j == 2){
+				camerabehind = false;
+				cameratop = true;
+				camerafree = false;			
+			}	
+			if(j == 3){
+				camerabehind = false;
+				cameratop = false;
+				camerafree = true;
+			}
+		}
+		//This function will compute intersection between robot and a specific wall just
+		//if the robot is near that wall. The global computation of all collision is too much expensive
+		//hence we will divide in collision zone;
+		var objposition = new THREE.Vector3(0,0,0);
+		var guardposition = new THREE.Vector3(0,0,0);
+		var guardposition1 = new THREE.Vector3(0,0,0);
+		function checkCollision(){
+			robotsphere.getWorldPosition(objposition);
+			guardSense.getWorldPosition(guardposition);
+			guardBB.getWorldPosition(guardposition1);
+			var dist = Math.abs(guardposition.distanceTo(objposition))
+			var dist1 = Math.abs(guardposition1.distanceTo(objposition))
+			if(objposition.z > -150 && objposition.z < 150){
+				collisionHorizontal(collidableHorizontalWalls1);
+				collisionVertical(collidableVerticalWalls1);
+			}
+			if(objposition.z <= -150 && objposition.z >-225 && objposition.x <= 0){
+				collisionHorizontal(collidableHorizontalWalls2);
+				collisionVertical(collidableVerticalWalls2);
+			}
+			if(objposition.z <= -150 && objposition.z >-225 && objposition.x > 0){
+				collisionHorizontal(collidableHorizontalWalls3);
+				collisionVertical(collidableVerticalWalls3);	
+			}
+			if(objposition.z <=-225 && objposition.z >-525){
+				collisionVertical(collidableVerticalWalls4);									
+			}			
+			if(objposition.z <= -525){
+				collisionHorizontal(collidableCube);
+				collisionHorizontal(collidableHorizontalWalls5);
+				collisionVertical(collidableVerticalWalls5);	
+			}
+			//if the robot collides with the guard he will be rejected, if he will collides
+			//with the guard Sense, it's game over
+			if(dist1 <80){
+				collisionHorizontal(collidableGuard);
+			}
+			if(dist < 30 ){
+				camerabehind = false;
+				cameratop = false;
+				camerafree = false;
+				gameOver();
+			}
+			
+		}
+		
+		function collisionHorizontal(objcoll){
+			var originPoint = robotsphere.position.clone();
+			//check if there is a collision and where
+			
+			for (var vertexIndex = 0; vertexIndex <robotsphere.geometry.vertices.length; vertexIndex++){		
+				var localVertex = robotsphere.geometry.vertices[vertexIndex].clone();
+				var globalVertex = localVertex.applyMatrix4( robotsphere.matrix );
+				var directionVector = globalVertex.sub( robotsphere.position );
+				
+				var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+				//scene.add(new THREE.ArrowHelper( ray.ray.direction, ray.ray.origin, 100, 0x00ff00 ))
+				var collisionResults = ray.intersectObjects( objcoll );
+				//collisionResults is an array sorted by increasing distance from collision
+				
+				if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) {
+
+					faccia = collisionResults[0].face.normal;
+					if (faccia.x <= -0.9){
+                        robotsphere.position.x = originPoint.x - 5;
+						}
+                    if (faccia.x >= 0.9){
+                        robotsphere.position.x = originPoint.x + 5;
+					}
+                    if (faccia.z <= -0.9){
+                        robotsphere.position.z = originPoint.z - 5;
+					}
+                    if (faccia.z >= 0.9){
+                        robotsphere.position.z = originPoint.z + 5;
+					}
+				}
+			}
+		
+		}
+        function gameOver() {
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('game-over-overlay').style.display = 'block';
+            
+            scene = false;
+
+        }
+		function win(){
+            document.getElementById('win').style.display = 'block';
+            document.getElementById('win-overlay').style.display = 'block';
+            
+            scene = false;
+
+		}
+
+        function reset() {
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('game-over-overlay').style.display = 'none';
+            window.location.reload(true);
+        }
+		function reset1(){
+	        document.getElementById('win').style.display = 'block';
+            document.getElementById('win-overlay').style.display = 'block';
+            window.location.reload(true);
+
+		}
+		
+		
+		function collisionVertical(objcoll){
+			var originPoint = robotsphere.position.clone();
+			//check if there is a collision and where
+			
+			for (var vertexIndex = 0; vertexIndex <robotsphere.geometry.vertices.length; vertexIndex++){		
+				var localVertex = robotsphere.geometry.vertices[vertexIndex].clone();
+				var globalVertex = localVertex.applyMatrix4( robotsphere.matrix );
+				var directionVector = globalVertex.sub( robotsphere.position );
+				
+				var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+				//scene.add(new THREE.ArrowHelper( ray.ray.direction, ray.ray.origin, 100, 0x00ff00 ))
+				var collisionResults = ray.intersectObjects( objcoll );
+				//collisionResults is an array sorted by increasing distance from collision
+				
+				if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) {
+
+					faccia = collisionResults[0].face.normal;
+					if (faccia.x <= -0.9){
+                        robotsphere.position.z = originPoint.z - 5;
+						}
+                    if (faccia.x >= 0.9){
+                        robotsphere.position.z = originPoint.z + 5;
+					}
+                    if (faccia.z <= -0.9){
+                        robotsphere.position.x = originPoint.x - 5;
+					}
+                    if (faccia.z >= 0.9){
+                        robotsphere.position.x = originPoint.x + 5;
+					}
+				}		
+			}
+		}
+
+		
+		
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////ROBOT//////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		//common variables
+		var armLength = 6;
+		var forearmLength = 4;
+		var shoulderRadius = 1;
+		var torsoLen = 10;
+		var headRadius = 5;
+		var legLength = 4;
+		var lowlegLength = 5;
+		var lowtorsojointHeigh = 1;
+		var lowtorsoHeigh = 3;
+		var wheelRadius = 4;
+		var headPosition = 21.5;
+		var cameraChase = true;
+		
+		headMaterial = new THREE.MeshStandardMaterial( {
+			color: 0x444444,
+
+			roughness: 0.4,
+			metalness: 1.0,
+
+			//roughnessMap: roughnessMap,	//need texture
+			//metalnessMap: metalnessMap,	//need texture
+
+			//envMap: envMap, // important -- especially for metals! need a texture cube
+			//envMapIntensity: envMapIntensity
+
+		} );
+		bodyMaterial = new THREE.MeshStandardMaterial( {
+			color: 0x444444,
+
+			roughness: 0.4,
+			metalness: 1.0,
+		
+		
+		});
+		jointMaterial = new THREE.MeshStandardMaterial({
+			color: 0xaa0000,
+	
+			roughness: 0.4,
+			metalness: 1.0,
+		
+		});
+		lowerbodyMaterial = new THREE.MeshStandardMaterial({
+			color : 0x1a651a,
+
+			roughness: 0.4,
+			metalness: 1.0,
+		});
+		
+	
+		//SPHERE USED TO PERFORM OSCILLATION DURING ROBOT WALK
+		var robotsphere = new THREE.Mesh(
+			new THREE.CubeGeometry(headPosition + headRadius, headPosition + headRadius,headPosition + headRadius,1,1,1),
+			new THREE.MeshBasicMaterial({
+				color: 0xff0000,
+				wireframe: true,
+				visible: false,
+			})
+		)
+		robotsphere.position.set(0,headPosition/2 + headRadius/2 ,0);		
+ 
+		//HEAD
+		var head = new THREE.Mesh(  
+			new THREE.SphereGeometry( headRadius, 8, 8, 0, Math.PI * 2, 0 , 1.5 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, /*side: THREE.DoubleSide,*/ wireframe: true } )
+			new THREE.MeshStandardMaterial( {
+				color: 0x444444,
+				roughness: 0.4,
+				metalness: 1.0,
+				name: "head",
+			} ),			
+		);
+		//headAxes = new THREE.AxesHelper( 10 );
+		//head.add( headAxes );
+		head.position.set(0, headPosition/2- wheelRadius/2, 0);
+		robotsphere.add(head);	
+		
+
+	
+		
+		
+		//TORSO
+		var torso = new THREE.Mesh(
+			new THREE.BoxGeometry( torsoLen, torsoLen, torsoLen , 15 , 15, 1),
+			//new THREE.MeshPhysicalMaterial( {color: 0x444444,/* side: THREE.DoubleSide,*/wireframe: true,})
+			lowerbodyMaterial
+			);
+		torso.position.set(0, -(9/10)*headRadius, 0);
+		head.add( torso);
+		
+		//LEFT SHOULDER
+		var leftShoulder = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		leftShoulder.position.set( 6, 3.5, 0);
+		leftShoulder.rotation.z = Math.PI/4;
+		torso.add(leftShoulder);
+		
+		//RIGHT SHOULDER
+		var rightShoulder = new THREE.Mesh( 
+			new THREE.SphereGeometry( shoulderRadius , 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		rightShoulder.position.set( -6, 3.5, 0);
+		rightShoulder.rotation.z = -Math.PI/4;
+		torso.add(rightShoulder);
+		
+		//LEFT ARM
+		var leftArm = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, armLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+		);
+		leftArm.position.set(0, -armLength/2, 0);
+		leftShoulder.add(leftArm);
+		
+		//RIGHT ARM
+		var rightArm = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, armLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+		);
+		rightArm.position.set(0, -armLength/2, 0);
+		rightShoulder.add(rightArm);
+		
+		//LEFT ELBOW
+		leftElbow = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		leftElbow.position.set(0, -armLength/2, 0);
+		leftArm.add(leftElbow);
+		
+		//RIGHT ELBOW
+		rightElbow = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		rightElbow.position.set(0, -armLength/2, 0);
+		rightArm.add(rightElbow);
+		
+		//LEFT FOREARM
+		var leftForearm = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, forearmLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+		);
+		leftForearm.position.set(0, -forearmLength/2, 0);
+		leftElbow.add(leftForearm);
+		
+		//RIGHT FOREARM
+		var rightForearm = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, forearmLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+		);
+		rightForearm.position.set(0, -forearmLength/2, 0);
+		rightElbow.add(rightForearm);
+		
+		//LEFT HAND
+		leftHand = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		leftHand.position.set(0, -forearmLength/2, 0);
+		leftForearm.add(leftHand);
+
+		//RIGHT HAND
+		rightHand = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		rightHand.position.set(0, -forearmLength/2, 0);
+		rightForearm.add(rightHand);
+		
+		//LOWER TORSO JOINT
+		lowertorsoJoint = new THREE.Mesh(
+			new THREE.CylinderGeometry( 5.8, 5.8, lowtorsojointHeigh, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			lowerbodyMaterial
+		);
+		lowertorsoJoint.position.set(0, -torsoLen/2 - lowtorsojointHeigh/2, 0);
+		torso.add(lowertorsoJoint);
+		
+		//LOWER TORSO 
+		lowerTorso = new THREE.Mesh(
+			new THREE.ConeGeometry(5.5, -lowtorsoHeigh, 16 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			lowerbodyMaterial
+		);
+		//lowerTorso.rotation.y = Math.PI/4;		
+		lowerTorso.position.set(0, -lowtorsojointHeigh/2 - 1.5, 0);
+		lowerTorso.material.side = THREE.DoubleSide;
+		lowertorsoJoint.add(lowerTorso);
+		
+		//LEFT UPPER LEG JOINT 
+		leftupperlegJoint = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		leftupperlegJoint.position.set(torsoLen/3, 0, 0);
+		leftupperlegJoint.rotation.z = -Math.PI/8;
+		lowerTorso.add(leftupperlegJoint);
+		
+		//RIGHT UPPER LEG JOINT 
+		rightupperlegJoint = new THREE.Mesh( 
+			new THREE.SphereGeometry(shoulderRadius, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		rightupperlegJoint.position.set(-torsoLen/3, 0, 0);
+		rightupperlegJoint.rotation.z = Math.PI/8;
+		lowerTorso.add(rightupperlegJoint);
+		
+		//LEFT LEG
+		leftLeg = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, legLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+			);
+		leftLeg.position.set(0, -legLength/2, 0);
+		leftupperlegJoint.add(leftLeg);
+		
+		//RIGHT LEG
+		rightLeg = new THREE.Mesh(
+			new THREE.CylinderGeometry( 1, 1, legLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+			);
+		rightLeg.position.set(0, -legLength/2, 0);
+		rightupperlegJoint.add(rightLeg);
+		
+		//LEFT LOWERLEG
+		leftlowerLeg = new THREE.Mesh(
+			new THREE.CylinderGeometry( 0.8, 0.8, lowlegLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+			);
+		leftlowerLeg.position.set(0, -legLength/2, 0);
+		leftLeg.add(leftlowerLeg);
+
+		//RIGHT LOWERLEG
+		rightlowerLeg = new THREE.Mesh(
+			new THREE.CylinderGeometry( 0.8, 0.8, lowlegLength, 32, 32 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+			);
+		rightlowerLeg.position.set(0, -legLength/2, 0);
+		rightLeg.add(rightlowerLeg);
+		
+		//LEFT LOWERLEG JOINT
+		leftlowerlegJoint = new THREE.Mesh(
+			new THREE.SphereGeometry(shoulderRadius*0.8, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		leftlowerlegJoint.position.set(0, -lowlegLength/2, 0);
+		leftlowerLeg.add(leftlowerlegJoint);
+		
+		//RIGHT LOWERLEG JOINT
+		rightlowerlegJoint = new THREE.Mesh(
+			new THREE.SphereGeometry(shoulderRadius*0.8, 32, 32, 0, Math.PI * 2, 0 , 3.1 ),
+			//new THREE.MeshBasicMaterial( {color: 0xaa0000, wireframe: true } )
+			jointMaterial
+			);
+		rightlowerlegJoint.position.set(0, -lowlegLength/2, 0);
+		rightlowerLeg.add(rightlowerlegJoint);
+		
+		//WHEEL 
+		
+		wheel = new THREE.Mesh(
+			new THREE.CylinderGeometry( wheelRadius, wheelRadius, 1, 32, 1 ),
+			//new THREE.MeshBasicMaterial( {color: 0x444444, wireframe: true } )
+			bodyMaterial
+		);
+
+		wheel.rotation.z = Math.PI/2;
+		wheel.position.set(0, -lowtorsojointHeigh - lowtorsoHeigh*2/3 - 5 ,0);
+		lowertorsoJoint.add(wheel);
+		//wheelAxes = new THREE.AxesHelper( 10 );
+		//wheel.add( wheelAxes );
+
+		head.traverse( function( node ) { if ( node instanceof THREE.Mesh ) { node.castShadow = true; } } );
+		scene.add(robotsphere)
+
+		
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////GUI////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////				
+		var effectController = {
+			light: 'Directional light',
+			camera:'Behind',
+			lightcolor: 'Orange',
+		}
+		var cameradic = {'Behind':1, 'On top':2, 'free':3 };
+		var colordict = {'Orange':1, 'White':2, 'Light Blue': 3};
+		var DirLight = true;
+		var lighttypes = ['Directional light','point lights']
+		var cameratypes = ['Behind', 'On top', 'free']
+		var lightcolors = ['Orange','White','Light Blue']
+		var lightelem = {state : 'Directional light'}
+
+		//gui = new dat.GUI( { autoPlace: true, width: 500, length: 600 } );
+		gui = new dat.GUI();
+		var lightFolder = gui.add(effectController,'light');
+		var lightCtrl = lightFolder.options(lighttypes);
+		lightCtrl.onChange(changelight);
+		var lightcolorFolder = gui.add(effectController,'lightcolor');
+		var lightcolorCtrl = lightcolorFolder.options(lightcolors);
+		lightcolorCtrl.onChange(changecolor);
+		//lightFolder.open();
+		var cameraFolder = gui.add(effectController,'camera');
+		var cameraCtrl = cameraFolder.options(cameratypes);
+		cameraCtrl.onChange(changecamera);
+		
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////ACTIONS////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////				
+		var xspeed = 0.5
+		var zspeed = 2
+		var yspeed = 0.5
+		var attackRotation = 0.1571;
+		var wheelglob = new THREE.Matrix4();
+		var wheelmov = new THREE.Matrix4();
+		var robotOrientation = new THREE.Vector3(0,0,0);
+		var guardspeed = 0.8
+		var yangspeed = 0.1
+		var xangspeed = 0.1
+		var zaxis = new THREE.Vector3(0,0,1);
+		var ztrans = new THREE.Vector3(0,0,0);
+		var clockwheelrotation = 40
+		var notJump = true;
+		var notJumpAhead = true;
+		var notAttack = true;
+		var notDance = true;
+		var jumpCounter = 0;
+		var legjointRotation = 0.01
+		var legjumpspeed = 0.05
+		var shoulderrotation = 0.02
+		var armup = true;
+		var arrowList = [];
+		var directionList = [];
+		var arrow;
+		var worldheadpos = new THREE.Vector3( 0, 0 ,0 );
+		var wheelPos = new THREE.Vector3(0,0,0);
+		var relCamOf = new THREE.Vector3(0,5 ,70);
+		
+		
+		
+		//CUBE
+		var cubeMaterial, cubeGeometry, currentCubeGeometry;
+		var uniforms, distance, surfaceNormal;
+		var exploding = false;
+		var increment;
+		// utils: number of total vertices
+		var verts;
+		
+		var vertShader = document.getElementById('vertexshader').innerHTML;
+		var fragShader = document.getElementById('fragmentshader').innerHTML;
+		var uniforms;
+		uniforms = {
+			amplitude: {
+				type: 'f',
+				value: 0
+			}
+		};
+		cubeMaterial = new THREE.ShaderMaterial({
+			uniforms: uniforms,
+			vertexShader: vertShader,
+			fragmentShader: fragShader
+		});
+		//CUBE
+		var cubeGeometry = new THREE.BoxGeometry( 30, 30, 30 ,15,15,15);
+
+
+		 // redefine the cube mode
+        cubeGeometry.mergeVertices();
+        var modifier = new THREE.SubdivisionModifier(0);
+        modifier.modify( cubeGeometry );
+        currentCubeGeometry = new THREE.BufferGeometry().fromGeometry(cubeGeometry)
+
+		verts = currentCubeGeometry.attributes.position.count;		
+		distance = new Float32Array( verts );
+		surfaceNormal = new Float32Array( verts * 3 );
+        currentCubeGeometry.addAttribute('distance', new THREE.BufferAttribute(distance, 1));
+        currentCubeGeometry.addAttribute('surfaceNormal', new THREE.BufferAttribute(surfaceNormal, 3));
+
+		cube = new THREE.Mesh( currentCubeGeometry, cubeMaterial );
+		cube.name = 'cube';
+		cube.receiveShadow = false;
+		cube.castShadow = true;
+		cube.position.set(0, 8, wall16.position.z);
+		scene.add(cube);
+		collidableCube.push(cube);
+
+		function explode() {
+			if ( exploding ){
+				return;
+			}
+			exploding = true;
+			increment = 0.01;
+			// Looping over each triangle
+			var x, y, z, l;
+			// update the surfaceNormal attribute of each vertices
+			// make sure the explosion not increase the size of triangles
+			for ( var i = 0; i < verts / 3; i += 1 ) {
+				var val = 0.5 + 2.0 * Math.random();
+				distance[3*i] = val;
+				distance[3*i+1] = val;
+				distance[3*i+2] = val;
+				// find the average of three vertices normal
+				// assign them back as surface normal
+				// only calculated once before explosion
+				x = currentCubeGeometry.attributes.normal.array[9*i] + 
+					currentCubeGeometry.attributes.normal.array[9*i+3] +
+					currentCubeGeometry.attributes.normal.array[9*i+6];
+				y = currentCubeGeometry.attributes.normal.array[9*i+1] + 
+					currentCubeGeometry.attributes.normal.array[9*i+4] +
+					currentCubeGeometry.attributes.normal.array[9*i+7];
+				z = currentCubeGeometry.attributes.normal.array[9*i+2] + 
+					currentCubeGeometry.attributes.normal.array[9*i+5] +
+					currentCubeGeometry.attributes.normal.array[9*i+8];
+				l = Math.sqrt(x*x + y*y + z*z);
+				x = x / l;
+				y = y / l;
+				z = z / l;
+				surfaceNormal[9*i] = surfaceNormal[9*i+3] = surfaceNormal[9*i+6] = x;
+				surfaceNormal[9*i+1] = surfaceNormal[9*i+4] = surfaceNormal[9*i+7] = y;
+				surfaceNormal[9*i+2] = surfaceNormal[9*i+5] = surfaceNormal[9*i+8] = z;
+			}
+			// update geometry
+			currentCubeGeometry.attributes.distance.needsUpdate = true;
+			currentCubeGeometry.attributes.surfaceNormal.needsUpdate = true;
+		};
+		
+		
+		
+		
+		
+		
+		
+		
+		////////////////////////////UPDATE////////////////////////////////////////////////
+		
+		function update(){
+		
+			//KEYBOARD Command
+			if(keyboard.pressed("W") && keyboard.pressed("K")){
+				notJumpAhead = false;
+			}else {
+				if (keyboard.pressed("W") ) {
+					robotsphere.translateZ(-zspeed); 					
+					wheel.rotation.x += clockwheelrotation;	
+				}				
+				// down
+				if (keyboard.pressed("S") ) {
+					robotsphere.translateZ(zspeed);
+					wheel.rotation.x -= clockwheelrotation;
+				}	// left
+				if (keyboard.pressed("A")) {
+					robotsphere.rotation.y += yangspeed;
+				}	// right
+				if (keyboard.pressed("D") ) {
+					robotsphere.rotation.y -= yangspeed;
+				}	// jump 
+				if (keyboard.pressed("K")) {
+					notJump = false;
+				}
+				
+				if (keyboard.pressed("J")){
+					notAttack = false;
+				
+				}
+				if (keyboard.pressed("L")){
+					notDance = false;
+				}
+				// r to reset 
+				else if (keyboard.pressed("R")) {
+					robotsphere.position.set(0,headPosition/2 + headRadius/2 , 0);
+					robotsphere.rotation.set(0,0,0);
+				}
+				
+			}
+			
+			moveGuardBB();
+			head.getWorldPosition(worldheadpos)
+			//Update the Bounding Box
+			//MovingCube.applyMatrix(head.matrixWorld);
+			//open door 
+			openDoorfun(worldheadpos ,leftslidingDoor)
+			if(opendoor){
+				if(leftslidingDoor.position.x <=  30 + wallWidth/4){
+					leftslidingDoor.translateX(2.5)
+					rightslidingDoor.translateX(-2.5)	
+				}
+			}else{
+				if(leftslidingDoor.position.x >= wallWidth/8 +7.5){
+					leftslidingDoor.translateX(-2.5)
+					rightslidingDoor.translateX(+2.5)					
+				}
+			}
+			
+			
+			//allow the camera to chase the player
+			robotsphere.updateMatrix();
+			var relativeCameraOffset = new THREE.Vector3(0,5,70); //(0,30,100)
+			//var cameraOffset = relativeCameraOffset.applyMatrix4()
+			var cameraOffset = relativeCameraOffset.applyMatrix4( head.matrixWorld );
+			camera1.position.x = cameraOffset.x;
+			camera1.position.y = cameraOffset.y;
+			camera1.position.z = cameraOffset.z;
+				
+			
+			camera1.lookAt( worldheadpos);
+			
+			camera2.position.x = robotsphere.position.x;
+			camera2.position.y = 500;
+			camera2.position.z = robotsphere.position.z;
+			camera2.lookAt(robotsphere.position);
+			
+			checkCollision();
+	
+			guardMove(guard,startGuard);
+		
+		
+		
+		
+		}
+			
+		function jump(){
+			moveGuardBB();
+			wheelglob = wheel.matrixWorld
+			guardMove(guard,startGuard);
+			notJump = false;
+			if(jumpCounter >= 0 && jumpCounter <= 10 ){
+				robotsphere.translateY(2*yspeed);
+				leftupperlegJoint.rotation.z += legjointRotation;
+				rightupperlegJoint.rotation.z -= legjointRotation;
+				wheelglob.makeTranslation(0,-yspeed*2/5,0);
+				wheel.applyMatrix(wheelglob);
+				leftShoulder.rotation.z += 	2*shoulderrotation;
+				rightShoulder.rotation.z -= 2*shoulderrotation;
+				leftlowerLeg.translateY(-4*legjumpspeed);
+				rightlowerLeg.translateY(-4*legjumpspeed);
+				jumpCounter += 1;
+			}
+			else if(jumpCounter > 10 && jumpCounter <= 21){
+				robotsphere.translateY(-2*yspeed);
+				leftupperlegJoint.rotation.z -= legjointRotation;
+				rightupperlegJoint.rotation.z += legjointRotation;
+				wheelglob.makeTranslation(0,yspeed*2/5,0);
+				wheel.applyMatrix(wheelglob);
+				leftShoulder.rotation.z -= 	2*shoulderrotation;
+				rightShoulder.rotation.z +=  2*shoulderrotation;
+				leftlowerLeg.translateY(+4*legjumpspeed);
+				rightlowerLeg.translateY(+4*legjumpspeed);
+				jumpCounter += 1;
+
+			}else{
+				jumpCounter = 0;
+				notJump = true;
+
+			}
+			openDoorfun(worldheadpos ,leftslidingDoor)
+			if(opendoor){
+				if(leftslidingDoor.position.x <=  30 + wallWidth/4){
+					leftslidingDoor.translateX(2.5)
+					rightslidingDoor.translateX(-2.5)	
+				}
+			}else{
+				if(leftslidingDoor.position.x >= wallWidth/8 +7.5){
+					leftslidingDoor.translateX(-2.5)
+					rightslidingDoor.translateX(+2.5)					
+				}
+			}
+			checkCollision();
+			
+		}
+		
+		function jumpAhead(){
+			//Update the Bounding Box
+			moveGuardBB();
+			wheelglob = wheel.matrixWorld
+			notJumpAhead = false;
+			guardMove(guard,startGuard);
+			if(jumpCounter >= 0 && jumpCounter <= 10 ){
+				robotsphere.translateZ(-zspeed);
+				wheel.rotation.x += 2*clockwheelrotation;	
+				robotsphere.translateY(3*yspeed);
+				leftupperlegJoint.rotation.z += legjointRotation;
+				rightupperlegJoint.rotation.z -= legjointRotation;
+				wheelglob.makeTranslation(0,-yspeed*2/5,0);
+				wheel.applyMatrix(wheelglob);
+				leftShoulder.rotation.z += 	2*shoulderrotation;
+				rightShoulder.rotation.z -= 2*shoulderrotation;
+				leftlowerLeg.translateY(-2*legjumpspeed);
+				rightlowerLeg.translateY(-2*legjumpspeed);
+				jumpCounter += 1;
+			}
+			else if(jumpCounter > 10 && jumpCounter <= 21){
+				robotsphere.translateZ(-zspeed);
+				wheel.rotation.x += 2*clockwheelrotation;	
+				robotsphere.translateY(-3*yspeed);
+				leftupperlegJoint.rotation.z -= legjointRotation;
+				rightupperlegJoint.rotation.z += legjointRotation;
+				wheelglob.makeTranslation(0,yspeed*2/5,0);
+				wheel.applyMatrix(wheelglob);
+				leftShoulder.rotation.z -= 	2*shoulderrotation;
+				rightShoulder.rotation.z +=  2*shoulderrotation;
+				leftlowerLeg.translateY(+2*legjumpspeed);
+				rightlowerLeg.translateY(+2*legjumpspeed);
+				jumpCounter += 1;
+
+			}else{
+				jumpCounter = 0;
+				notJumpAhead = true;
+			}
+			if(camerabehind){
+				head.getWorldPosition(worldheadpos)
+				var relativeCameraOffset = new THREE.Vector3(0,5,70); //(0,30,100)
+				robotsphere.updateMatrix();
+				var cameraOffset = relativeCameraOffset.applyMatrix4( head.matrixWorld );
+				camera1.position.x = cameraOffset.x;
+				camera1.position.y = cameraOffset.y;
+				camera1.position.z = cameraOffset.z;
+				camera1.lookAt( worldheadpos);
+			} 
+			if(cameratop){
+				camera2.position.x = robotsphere.position.x;
+				camera2.position.y = 500;
+				camera2.position.z = robotsphere.position.z;
+				camera2.lookAt(robotsphere.position);			
+			}
+			openDoorfun(worldheadpos ,leftslidingDoor)
+			if(opendoor){
+				if(leftslidingDoor.position.x <=  30 + wallWidth/4){
+					leftslidingDoor.translateX(2.5)
+					rightslidingDoor.translateX(-2.5)	
+				}
+			}else{
+				if(leftslidingDoor.position.x >= wallWidth/8 +7.5){
+					leftslidingDoor.translateX(-2.5)
+					rightslidingDoor.translateX(+2.5)					
+				}
+			}
+			checkCollision();
+		}
+		var robotpos = new THREE.Vector3(0,0,0);
+		var cubepos = new THREE.Vector3(0,0,0);
+		function attack(){
+			robotsphere.getWorldPosition(robotpos);
+			cube.getWorldPosition(cubepos);
+			var dist = Math.abs(robotpos.distanceTo(cubepos))
+			moveGuardBB();
+			robotsphere.getWorldDirection (robotOrientation);
+			notAttack = false;
+			guardMove(guard,startGuard);
+			if(dist < 50 ){
+				explode();
+			}			
+			if(jumpCounter >= 0 && jumpCounter <= 19 ){
+				robotsphere.rotation.y += attackRotation;
+				lowertorsoJoint.rotation.y -= attackRotation;
+				leftShoulder.rotation.z += 3*legjointRotation;
+				rightShoulder.rotation.z -= 3*legjointRotation;
+				jumpCounter += 1;
+			}
+			else if(jumpCounter > 19 && jumpCounter < 40){
+				robotsphere.rotation.y += attackRotation;
+				lowertorsoJoint.rotation.y -= attackRotation;
+				leftShoulder.rotation.z -= 3*legjointRotation;
+				rightShoulder.rotation.z += 3*legjointRotation;
+				jumpCounter += 1;
+			}else{
+				jumpCounter = 0;
+				notAttack = true;
+			}
+			openDoorfun(worldheadpos ,leftslidingDoor)
+			if(opendoor){
+				if(leftslidingDoor.position.x <=  30 + wallWidth/4){
+					leftslidingDoor.translateX(2.5)
+					rightslidingDoor.translateX(-2.5)	
+				}
+			}else{
+				if(leftslidingDoor.position.x >= wallWidth/8 +7.5){
+					leftslidingDoor.translateX(-2.5)
+					rightslidingDoor.translateX(+2.5)					
+				}
+			}
+			checkCollision();
+
+		
+		}
+
+		
+		
+		
+		
+		
+		
+		function animate() {
+			//TODO
+		    if (LOADING_COMPLETE == false) {
+                requestAnimationFrame(animate),
+                    renderer.render(loadingScreen.scene, loadingScreen.camera);
+                return;
+            }
+			
+			//renderer.setClearColor( 0xffffff, 1 );
+		    document.getElementById("loadingbar").style.display = "none";
+			requestAnimationFrame( animate );
+			if(camerabehind){
+				renderer.render( scene, camera1 );
+			}
+			if(cameratop){
+				renderer.render( scene, camera2 );
+			}
+			if(camerafree){
+				controls.update();
+				renderer.render( scene, camera3 );
+			}
+			var delta = clock.getDelta();
+			if (mixer != null) {
+                mixer.update(delta);
+            };
+			//if an action has to be done stop the update function and proceed with the action
+			if(notJump && notJumpAhead && notAttack){
+				update();
+			}else if(!notJump){
+				jump();
+			}else if(!notJumpAhead){
+				jumpAhead();
+			}else if(!notAttack){
+				attack();
+			}
+			if (exploding) {
+				uniforms.amplitude.value += increment;
+				increment += 0.0004;
+				if ( uniforms.amplitude.value > 10.0 ) {
+					uniforms.amplitude.value = 0;
+					exploding = false;
+					increment = 0.01;
+					camerabehind = false;
+					cameratop = false;
+					camerafree = false;
+					win();
+				}
+			}	
+		}
+		animate();
+		
+			
+		
+	</script>	
+</body>
+</html>
